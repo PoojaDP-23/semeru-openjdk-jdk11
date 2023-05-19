@@ -113,7 +113,7 @@ public class KeepAliveCache
      * @param url  The URL contains info about the host and port
      * @param http The HttpClient to be cached
      */
-    public synchronized void put(final URL url, Object obj, HttpClient http) {
+    public void put(final URL url, Object obj, HttpClient http) {
         // this method may need to close an HttpClient, either because
         // it is not cacheable, or because the cache is at its capacity.
         // In the latter case, we close the least recently used client.
@@ -152,39 +152,39 @@ public class KeepAliveCache
 
              if (v == null) {
                  int keepAliveTimeout = http.getKeepAliveTimeout();
-                     if (keepAliveTimeout == 0) {
-                         keepAliveTimeout = getUserKeepAlive(http.getUsingProxy());
-                         if (keepAliveTimeout == -1) {
-                             // same default for server and proxy
-                             keepAliveTimeout = 5;
-                         }
-                     } else if (keepAliveTimeout == -1) {
-                         keepAliveTimeout = getUserKeepAlive(http.getUsingProxy());
-                         if (keepAliveTimeout == -1) {
-                             // different default for server and proxy
-                             keepAliveTimeout = http.getUsingProxy() ? 60 : 5;
-                         }
-                    } else if (keepAliveTimeout == -2) {
-                        keepAliveTimeout = 0;
-                    }
-                    // at this point keepAliveTimeout is the number of seconds to keep
-                    // alive, which could be 0, if the user specified 0 for the property
-                    assert keepAliveTimeout >= 0;
-                    if (keepAliveTimeout == 0) {
-                        oldClient = http;
-                    } else {
-                        v = new ClientVector(keepAliveTimeout * 1000);
-                        v.put(http);
-                        super.put(key, v);
-                    }
+                 if (keepAliveTimeout == 0) {
+                     keepAliveTimeout = getUserKeepAlive(http.getUsingProxy());
+                     if (keepAliveTimeout == -1) {
+                         // same default for server and proxy
+                         keepAliveTimeout = 5;
+                     }
+                 } else if (keepAliveTimeout == -1) {
+                     keepAliveTimeout = getUserKeepAlive(http.getUsingProxy());
+                     if (keepAliveTimeout == -1) {
+                         // different default for server and proxy
+                         keepAliveTimeout = http.getUsingProxy() ? 60 : 5;
+                     }
+                 } else if (keepAliveTimeout == -2) {
+                     keepAliveTimeout = 0;
+                 }
+                 // at this point keepAliveTimeout is the number of seconds to keep
+                 // alive, which could be 0, if the user specified 0 for the property
+                 assert keepAliveTimeout >= 0;
+                 if (keepAliveTimeout == 0) {
+                     oldClient = http;
+                 } else {
+                     v = new ClientVector(keepAliveTimeout * 1000);
+                     v.put(http);
+                     super.put(key, v);
+                 }
              } else {
                  oldClient = v.put(http);
              }
         }
         // close after releasing locks
-	    if (oldClient != null) {
-	        oldClient.closeServer();
-	    }
+	if (oldClient != null) {
+	    oldClient.closeServer();
+	}
     }
 
     // returns the keep alive set by user in system property or -1 if not set
